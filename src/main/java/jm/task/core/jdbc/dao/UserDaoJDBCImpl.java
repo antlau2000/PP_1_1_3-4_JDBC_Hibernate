@@ -16,137 +16,66 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void createUsersTable() {
-        String method = "createUsersTable";
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (Statement statement = Util.getConnection().createStatement()) {
-                System.out.println("Start " + method);
-                statement.execute("CREATE TABLE IF NOT EXISTS users2 (\n" +
-                        "  `id` INT NOT NULL AUTO_INCREMENT,\n" +
-                        "  `name` VARCHAR(45) NOT NULL,\n" +
-                        "  `last_name` VARCHAR(45) NOT NULL,\n" +
-                        "  `age` INT(3) NOT NULL,\n" +
-                        "  PRIMARY KEY (`id`));");
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        try (Statement statement = Util.getConnection().createStatement()) {
+            statement.execute("""
+                        CREATE TABLE IF NOT EXISTS users2 (
+                          `id` INT NOT NULL AUTO_INCREMENT,
+                          `name` VARCHAR(45) NOT NULL,
+                          `last_name` VARCHAR(45) NOT NULL,
+                          `age` INT(3) NOT NULL,
+                          PRIMARY KEY (`id`));""");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void dropUsersTable() {
-        String method = "dropUsersTable";
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (Statement statement = Util.getConnection().createStatement()) {
-                System.out.println("Start " + method);
-                statement.execute("DROP TABLE IF EXISTS users2;");
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        try (Statement statement = Util.getConnection().createStatement()) {
+            statement.execute("DROP TABLE IF EXISTS users2;");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        String method = "saveUser";
-        String insert = "INSERT INTO users2 (name, last_name, age) VALUES (?, ?, ?);";
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (PreparedStatement statement = Util.getConnection().prepareStatement(insert)) {
-                System.out.println("Start " + method);
-                statement.setString(1, name);
-                statement.setString(2, lastName);
-                statement.setInt(3, age);
-                statement.executeUpdate();
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        try (PreparedStatement statement = Util.getConnection().prepareStatement(
+                "INSERT INTO users2 (name, last_name, age) VALUES (?, ?, ?);")) {
+            statement.setString(1, name);
+            statement.setString(2, lastName);
+            statement.setInt(3, age);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void removeUserById(long id) {
-        String method = "removeUserById";
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (PreparedStatement preparedStatement = Util.getConnection().prepareStatement(
-                    "DELETE FROM users2 WHERE id = ?")) {
-                System.out.println("Start " + method);
-                preparedStatement.setInt(1, (int) id);
-                preparedStatement.execute();
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        try (PreparedStatement preparedStatement = Util.getConnection().prepareStatement(
+                "DELETE FROM users2 WHERE id = ?")) {
+            preparedStatement.setInt(1, (int) id);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public List<User> getAllUsers() {
-        String method = "getAllUsers";
-        List<User> users = null;
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (Statement statement = Util.getConnection().createStatement()) {
-                System.out.println("Start " + method);
-                ResultSet resultSet = statement.executeQuery("SELECT * FROM users2;");
-                users = getUsers(resultSet);
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        List<User> users;
+        try (Statement statement = Util.getConnection().createStatement()) {
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM users2;");
+            users = getUsers(resultSet);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return users;
     }
 
     public void cleanUsersTable() {
-        String method = "cleanUsersTable";
-        boolean isNotComplete;
-        int count = 0;
-        do {
-            try (Statement statement = Util.getConnection().createStatement()) {
-                System.out.println("Start " + method);
-                statement.execute("TRUNCATE TABLE users2;");
-                System.out.println("Should be executed");
-                isNotComplete = false;
-            } catch (SQLException e) {
-                isNotComplete = true;
-                count++;
-                if (count >= 3) {
-                    throw new RuntimeException(e);
-                }
-            }
-        } while (isNotComplete);
+        try (Statement statement = Util.getConnection().createStatement()) {
+            statement.execute("TRUNCATE TABLE users2;");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private List<User> getUsers(ResultSet resultSet) throws SQLException {
