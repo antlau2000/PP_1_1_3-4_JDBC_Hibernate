@@ -15,8 +15,20 @@ public class Util {
                     "&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private final static String USERNAME = "root";
     private final static String PASSWORD = "root";
+    private static Connection connection;
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL_FIXED, USERNAME, PASSWORD);
+        if (connection == null) {
+            connection = DriverManager.getConnection(URL_FIXED, USERNAME, PASSWORD);
+        }
+        return connection;
+    }
+
+    public static void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
