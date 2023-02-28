@@ -5,6 +5,7 @@ import jm.task.core.jdbc.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.hibernate.service.ServiceRegistry;
 
 import java.sql.Connection;
@@ -21,13 +22,13 @@ public class Util {
                     "&useLegacyDatetimeCode=false&serverTimezone=UTC";
     private final static String USERNAME = "root";
     private final static String PASSWORD = "root";
-    private static SessionFactory sessionJavaConfigFactory;
+    private static SessionFactory sessionFactory;
 
-    public static Connection getJDBCConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL_FIXED, USERNAME, PASSWORD);
     }
 
-    public static void closeJDBCConnection(Connection connection) {
+    public static void closeConnection(Connection connection) {
         try {
             connection.close();
         } catch (SQLException e) {
@@ -35,40 +36,34 @@ public class Util {
         }
     }
 
-    private static SessionFactory buildSessionJavaConfigFactory() {
-        try {
-            Configuration configuration = new Configuration();
+    public static SessionFactory getSessionFactory() {
+        if (sessionFactory == null) {
+            try {
+                Configuration configuration = new Configuration();
 
-            //Create Properties, can be read from property files too
-            Properties properties = new Properties();
-            properties.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-            properties.put("hibernate.connection.url", URL);
-            properties.put("hibernate.connection.username", USERNAME);
-            properties.put("hibernate.connection.password", PASSWORD);
-            properties.put("hibernate.current_session_context_class", "thread");
+                Properties settings = new Properties();
+                settings.put(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+                settings.put(Environment.URL, URL_FIXED);
+                settings.put(Environment.USER, "root");
+                settings.put(Environment.PASS, "root");
+                settings.put(Environment.DIALECT, "org.hibernate.dialect.MySQL5Dialect");
 
-            configuration.setProperties(properties);
+                settings.put(Environment.SHOW_SQL, "true");
 
-            //we can set mapping file or class with annotation
-            //addClass(Employee1.class) will look for resource
-            // com/journaldev/hibernate/model/Employee1.hbm.xml (not good)
-            configuration.addAnnotatedClass(User.class);
+                settings.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, "thread");
 
-            ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties()).build();
-            System.out.println("Hibernate Java Config serviceRegistry created");
+                configuration.setProperties(settings);
 
-            return configuration.buildSessionFactory(serviceRegistry);
+                configuration.addAnnotatedClass(User.class);
+
+                ServiceRegistry serviceRegistry = new StandardServiceRegistryBuilder()
+                        .applySettings(configuration.getProperties()).build();
+
+                sessionFactory = configuration.buildSessionFactory(serviceRegistry);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        catch (Throwable ex) {
-            System.err.println("Initial SessionFactory creation failed." + ex);
-            throw new ExceptionInInitializerError(ex);
-        }
-    }
-
-    public static SessionFactory getSessionJavaConfigFactory() {
-        if(sessionJavaConfigFactory == null) {
-            sessionJavaConfigFactory = buildSessionJavaConfigFactory();
-        }
-        return sessionJavaConfigFactory;
+        return sessionFactory;
     }
 }

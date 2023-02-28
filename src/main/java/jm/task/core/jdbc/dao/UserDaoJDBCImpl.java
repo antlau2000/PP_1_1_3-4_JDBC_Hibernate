@@ -12,7 +12,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public UserDaoJDBCImpl() {
         try {
-            connection = Util.getJDBCConnection();
+            connection = Util.getConnection();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -92,5 +92,9 @@ public class UserDaoJDBCImpl implements UserDao {
             users.add(user);
         }
         return users;
+    }
+
+    public void closeConnection() {
+        Util.closeConnection(connection);
     }
 }
