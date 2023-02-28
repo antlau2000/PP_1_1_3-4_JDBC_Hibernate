@@ -93,4 +93,8 @@ public class UserDaoJDBCImpl implements UserDao {
         }
         return users;
     }
+
+    public void closeConnection() {
+        Util.closeConnection(connection);
+    }
 }
