@@ -2,6 +2,7 @@ package jm.task.core.jdbc.util;
 
 
 import jm.task.core.jdbc.model.User;
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -32,6 +33,14 @@ public class Util {
         try {
             connection.close();
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void closeSessionFactory() {
+        try {
+            sessionFactory.close();
+        } catch (HibernateException e) {
             throw new RuntimeException(e);
         }
     }
